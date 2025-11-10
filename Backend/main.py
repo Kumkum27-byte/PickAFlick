@@ -5,13 +5,17 @@ import pandas as pd
 import pickle
 import os
 import requests
+from difflib import get_close_matches
 
 # Create app instance
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500"],  # or ["http://127.0.0.1:5500"] if using Live Server
+    allow_origins=["http://127.0.0.1:5500",
+    "http://127.0.0.1:5501",
+    "http://localhost:5500",
+    "http://localhost:5501"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,9 +37,22 @@ movies = pd.DataFrame(movie_dict)
 OMDB_API_KEY = "2052fcca"
 OMDB_BASE_URL = "http://www.omdbapi.com/"
 
-# Recommendation function
-def recommend(movie):
-    movie_index = movies[movies['title'] == movie].index[0]
+# --- Recommendation function ---
+def recommend(movie_query: str):
+    # Convert input to lowercase for flexible matching
+    movie_query = movie_query.lower()
+    
+    # Find closest matching title
+    all_titles = movies['title'].str.lower().tolist()
+    close_matches = get_close_matches(movie_query, all_titles, n=1, cutoff=0.4)
+    
+    if not close_matches:
+        return [{"title": "No match found 😢", "poster": "https://via.placeholder.com/300x450?text=No+Results"}]
+    
+    # Get the best matching title
+    best_match = close_matches[0]
+    movie_index = movies[movies['title'].str.lower() == best_match].index[0]
+
     distances = similarity[movie_index]
     movie_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:6]
 
@@ -57,7 +74,7 @@ def recommend(movie):
 
     return recommended_movies
 
-# Routes
+# --- Routes ---
 @app.get("/")
 def home():
     return {"message": "Welcome to the Movie Recommendation API!"}
