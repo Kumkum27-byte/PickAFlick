@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieMate | Favourites</title>
+    <link rel="stylesheet" href="Style.css">
+</head>
+<body>
+    <!-- ===== NAVBAR ===== -->
+    <nav class="nav">
+        <h1 id="moviename" onclick="location.href='index.html'">PickAFlick</h1>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#">Recommendation</a></li>
+            <li><a href="favourites.html" class="active">Favourites</a></li>
+            <li><a href="#">About</a></li>
+        </ul>
+    </nav>
+
+    <!-- ===== HERO SECTION ===== -->
+    <section class="heroSection">
+        <div class="hero-container">
+            <h1>Your Favourite Movies </h1>
+            <p>All your saved movies will appear here!</p>
+
+            <div id="favouritesList" class="recommendations">
+                <p style="color:#aaa;text-align:center;">No favourites yet... Start adding some!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="footer-bottom">
+            <p>© 2025 MovieMate | Favourites Page</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

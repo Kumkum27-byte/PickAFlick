@@ -5,62 +5,71 @@ document.addEventListener("DOMContentLoaded", () => {
   const navLinks = document.querySelectorAll(".nav ul li a");
 
   // 🎬 Navbar active animation
+  // Highlight active nav link dynamically and retain it after page load
+  const currentPage = window.location.pathname.split("/").pop();
   navLinks.forEach(link => {
+    const hrefPage = link.getAttribute("href").split("/").pop();
+    if (hrefPage === currentPage) {
+      link.classList.add("active");
+    }
+
+    // Also handle click effect (for single-page feel)
     link.addEventListener("click", () => {
       navLinks.forEach(l => l.classList.remove("active"));
       link.classList.add("active");
     });
   });
 
-  // 🎞 Search button click
-  btn.addEventListener("click", async () => {
-    const movieName = input.value.trim();
-    if (!movieName) return alert("Please enter a movie name!");
-
-    recommendations.innerHTML = `<p style="color:#aaa;text-align:center;">Loading recommendations...</p>`;
-
-    try {
-      const res = await fetch(`https://www.omdbapi.com/?s=${movieName}&apikey=564727fa`);
-      const data = await res.json();
-
-      if (data.Response === "False") {
-        recommendations.innerHTML = `<p style="color:#E50914;text-align:center;">No movies found. Try another name!</p>`;
+  // 🎞 Recommendation fetch from FastAPI backend
+  if (btn) {
+    btn.addEventListener("click", async () => {
+      const movieName = input.value.trim();
+      if (!movieName) {
+        alert("Please enter a movie name!");
         return;
       }
 
-      recommendations.innerHTML = "";
+      recommendations.innerHTML =
+        '<p style="color:#aaa;text-align:center;">Loading recommendations...</p>';
 
-      data.Search.forEach(movie => {
-        let poster = movie.Poster && movie.Poster !== "N/A"
-          ? movie.Poster
-          : "https://via.placeholder.com/300x450/000000/FFFFFF?text=No+Poster";
-
-        const movieCard = document.createElement("div");
-        movieCard.classList.add("movie-card");
-
-        movieCard.innerHTML = `
-          <img src="${poster}" alt="${movie.Title}">
-          <h3>${movie.Title}</h3>
-          <p>${movie.Year}</p>
-        `;
-
-        // ✅ Fallback in case poster URL is broken (404 or invalid)
-        const img = movieCard.querySelector("img");
-        img.onerror = () => {
-          img.src = "https://via.placeholder.com/300x450/000000/FFFFFF?text=No+Poster";
-        };
-
-        // ✨ Smooth fade-in
-        movieCard.style.opacity = "0";
-        recommendations.appendChild(movieCard);
-        requestAnimationFrame(() => {
-          movieCard.style.transition = "opacity 0.6s ease-in";
-          movieCard.style.opacity = "1";
+      try {
+        const res = await fetch("http://127.0.0.1:8000/recommend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ movie_name: movieName })
         });
-      });
-    } catch (error) {
-      console.error(error);
-      recommendations.innerHTML = `<p style="color:#E50914;text-align:center;">Error fetching movies. Try again later.</p>`;
-    }
-  });
+
+        if (!res.ok) throw new Error("Backend error");
+        const data = await res.json();
+
+        if (!data.recommended_movies || data.recommended_movies.length === 0) {
+          recommendations.innerHTML =
+            '<p style="color:#E50914;text-align:center;">No movies found. Try another name!</p>';
+          return;
+        }
+
+        recommendations.innerHTML = "";
+
+        data.recommended_movies.forEach(movie => {
+          const poster =
+            movie.poster && movie.poster !== "N/A"
+              ? movie.poster
+              : "https://via.placeholder.com/300x450/000000/FFFFFF?text=No+Poster";
+
+          const movieCard = document.createElement("div");
+          movieCard.classList.add("movie-card");
+          movieCard.innerHTML = `
+            <img src="${poster}" alt="${movie.title}">
+            <h3>${movie.title}</h3>
+          `;
+
+          recommendations.appendChild(movieCard);
+        });
+      } catch (error) {
+        console.error(error);
+        recommendations.innerHTML =
+          '<p style="color:#E50914;text-align:center;">Error fetching movies. Try again later.</p>';
+      }
+    });
+  }
 });
