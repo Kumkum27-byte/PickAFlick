@@ -14,7 +14,7 @@ ENV/
 .DS_Store
 
 # Large files
-*.pkl
+#*.pkl
 
 # Other temporary files
 *.log
