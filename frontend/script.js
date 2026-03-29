@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
         '<p style="color:#aaa;text-align:center;">Loading recommendations...</p>';
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/recommend", {
+        const res = await fetch("https://pick-a-flick-backend.onrender.com/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ movie_name: movieName })
